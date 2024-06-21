@@ -4,7 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
+	"math/rand"
 )
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
 
 func HashPassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
@@ -32,4 +35,13 @@ func CompareHashAndPasswordBcrypt(hash, rawPassword string) error {
 	}
 
 	return nil
+}
+
+func GenerateRandomString(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+
+	return string(b)
 }

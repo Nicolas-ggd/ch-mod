@@ -3,6 +3,8 @@ package repository
 import (
 	"fmt"
 	"github.com/Nicolas-ggd/ch-mod/internal/db/models"
+	"github.com/Nicolas-ggd/ch-mod/internal/db/models/request"
+	"github.com/Nicolas-ggd/ch-mod/pkg/common"
 	"gorm.io/gorm"
 )
 
@@ -61,4 +63,18 @@ func (r *UserRepository) GetUserTokenByHash(hash string) (*models.UserToken, err
 	}
 
 	return &userToken, nil
+}
+
+func (r *UserRepository) ChangePassword(newPassword *request.SetPasswordRequest, userId uint) error {
+	hash, err := common.HashPassword(newPassword.Password)
+	if err != nil {
+		return err
+	}
+
+	result := r.DB.Model(&models.User{}).Where("id = ?", userId).Update("password", hash)
+	if result.Error != nil {
+		return err
+	}
+
+	return nil
 }

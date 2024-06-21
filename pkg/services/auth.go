@@ -9,6 +9,7 @@ import (
 	"github.com/Nicolas-ggd/ch-mod/pkg/common"
 	"github.com/Nicolas-ggd/ch-mod/pkg/repository"
 	"github.com/golang-jwt/jwt"
+	"gorm.io/gorm"
 	"os"
 	"strings"
 )
@@ -20,6 +21,8 @@ type IAuthService interface {
 	Login(model *request.LoginRequest) (*string, error)
 	Logout(userId uint) error
 	CheckJWT(token string) (*models.TokenClaim, error)
+	SetPassword(credentials request.SetPasswordRequest, hash string) error
+	VerifyCredentials(email string) error
 }
 
 type AuthService struct {
@@ -88,7 +91,30 @@ func (as *AuthService) Logout(userId uint) error {
 	return nil
 }
 
-func (a *AuthService) CheckJWT(token string) (*models.TokenClaim, error) {
+func (as *AuthService) SetPassword(credentials request.SetPasswordRequest, hash string) error {
+	token, err := as.userRepository.GetUserTokenByHash(hash)
+	if err != nil {
+		return err
+	}
+
+	if credentials.Password != credentials.PasswordConfirmation {
+		return fmt.Errorf("password and confirmation password doesn't match")
+	}
+
+	err = as.userRepository.ChangePassword(&credentials, token.UserID)
+	if err != nil {
+		return err
+	}
+
+	err = as.tokenRepository.DeleteToken(token.UserID, models.Validation)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (as *AuthService) CheckJWT(token string) (*models.TokenClaim, error) {
 
 	extracted, err := ExtractBearerToken(token)
 	if err != nil {
@@ -96,7 +122,7 @@ func (a *AuthService) CheckJWT(token string) (*models.TokenClaim, error) {
 	}
 
 	//if user token exists
-	user, err := a.userRepository.GetUserTokenByHash(extracted)
+	user, err := as.userRepository.GetUserTokenByHash(extracted)
 	if err != nil {
 		return nil, err
 	}
@@ -112,6 +138,35 @@ func (a *AuthService) CheckJWT(token string) (*models.TokenClaim, error) {
 	}
 
 	return userObj, nil
+}
+
+func (as *AuthService) VerifyCredentials(email string) error {
+	user, err := as.userRepository.GetByEmail(email)
+	if err != nil {
+		return err
+	}
+
+	randomStr := common.GenerateRandomString(20)
+
+	usrToken := &models.UserToken{
+		UserID: user.ID,
+		Type:   models.Validation,
+		Hash:   []byte(randomStr),
+	}
+
+	err = as.tokenRepository.UpdateToken(usrToken)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			err = as.tokenRepository.CreateToken(usrToken)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+		return err
+	}
+
+	return nil
 }
 
 func ValidateJWT(jwtToken string) (*jwt.Token, error) {

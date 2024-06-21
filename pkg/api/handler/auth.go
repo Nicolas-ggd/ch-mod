@@ -62,3 +62,45 @@ func (ah *AuthHandler) Login(c *gin.Context) {
 func (ah *AuthHandler) Logout(c *gin.Context) {
 
 }
+
+func (ah *AuthHandler) SetPassword(c *gin.Context) {
+	var newPassword request.SetPasswordRequest
+
+	err := c.ShouldBind(&newPassword)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		return
+	}
+
+	smsCode := c.Query("code")
+	if smsCode == "" {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "Invalid request data, missing code query parameter"})
+		return
+	}
+
+	err = ah.AuthService.SetPassword(newPassword, smsCode)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": "You set new password"})
+}
+
+func (ah *AuthHandler) ResetPassword(c *gin.Context) {
+	var email request.ResetPasswordRequest
+
+	err := c.ShouldBind(&email)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = ah.AuthService.VerifyCredentials(email.Email)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": "Check your email"})
+}
