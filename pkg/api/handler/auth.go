@@ -60,7 +60,13 @@ func (ah *AuthHandler) Login(c *gin.Context) {
 }
 
 func (ah *AuthHandler) Logout(c *gin.Context) {
+	userToken := ah.GetUserClaims(c)
 
+	err := ah.AuthService.Logout(userToken.UserId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 }
 
 func (ah *AuthHandler) SetPassword(c *gin.Context) {
