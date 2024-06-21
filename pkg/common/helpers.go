@@ -1,0 +1,35 @@
+package common
+
+import (
+	"errors"
+	"fmt"
+	"golang.org/x/crypto/bcrypt"
+)
+
+func HashPassword(password string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	if err != nil {
+		return "", nil
+	}
+
+	hashedPassword := string(hash)
+
+	return hashedPassword, nil
+}
+
+func ComparePasswords(password, confirmPassword string) error {
+	if password != confirmPassword {
+		return errors.New("passwords do not match")
+	}
+
+	return nil
+}
+
+func CompareHashAndPasswordBcrypt(hash, rawPassword string) error {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(rawPassword))
+	if err != nil {
+		return fmt.Errorf("incorrect password: %w", err)
+	}
+
+	return nil
+}
