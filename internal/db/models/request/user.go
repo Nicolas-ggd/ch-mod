@@ -20,6 +20,15 @@ type LoginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type SetPasswordRequest struct {
+	Password             string `json:"password" binding:"required"`
+	PasswordConfirmation string `json:"password_confirmation" binding:"required"`
+}
+
+type ResetPasswordRequest struct {
+	Email string `json:"email" binding:"required"`
+}
+
 func (ur *UserRegisterRequest) ToModel() *models.User {
 	return &models.User{
 		FullName:    ur.FullName,

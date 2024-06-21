@@ -9,6 +9,8 @@ import (
 func AuthRoutes(e *gin.RouterGroup, authHandler *handler.AuthHandler) {
 	e.POST("/register", authHandler.Register)
 	e.POST("/login", authHandler.Login)
+	e.POST("/reset-password", authHandler.ResetPassword)
+	e.POST("/set-password", authHandler.SetPassword)
 	e.Use(middleware.AuthMiddleware(authHandler.AuthService))
 	e.POST("/logout", authHandler.Logout)
 }
