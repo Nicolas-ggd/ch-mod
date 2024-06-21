@@ -5,8 +5,12 @@ import (
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"math/rand"
+	"os"
 )
 
+var (
+	secret = os.Getenv("PRIVATE_KEY")
+)
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
 
 func HashPassword(password string) (string, error) {

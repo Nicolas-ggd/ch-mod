@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/Nicolas-ggd/ch-mod/pkg/api/handler"
 	"github.com/Nicolas-ggd/ch-mod/pkg/api/routes"
+	"github.com/Nicolas-ggd/ch-mod/pkg/api/ws"
 	"github.com/Nicolas-ggd/ch-mod/pkg/repository"
 	"github.com/Nicolas-ggd/ch-mod/pkg/services"
 	"github.com/gin-gonic/gin"
@@ -17,6 +18,11 @@ func ServeAPI(db *gorm.DB) *gin.Engine {
 
 	r := gin.Default()
 
+	wss := ws.NewWebsocket()
+
+	go wss.Run()
+
+	r.GET("/ws", wss.ServeWs)
 	v1 := r.Group("v1")
 	{
 		routes.AuthRoutes(v1.Group("auth"), authHandler)
