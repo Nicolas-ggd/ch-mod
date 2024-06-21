@@ -30,7 +30,9 @@ func InitDB() (*gorm.DB, error) {
 
 	err = database.AutoMigrate(
 		&models.User{},
-		models.UserToken{},
+		&models.UserToken{},
+		&models.Chat{},
+		&models.Message{},
 	)
 	if err != nil {
 		panic(err)
