@@ -143,7 +143,7 @@ func (ws *Websocket) SendEvent(clients []string, data []byte) {
 		c, ok := ws.Clients[client]
 		if !ok {
 			log.Printf("Client with ID %s not found", client)
-			return // Exit the function without sending data
+			continue // Continue process
 		}
 
 		cl = c
