@@ -133,7 +133,7 @@ func (ws *Websocket) SendEvent(clients []string, data []byte) {
 		log.Println(err)
 	}
 
-	value, err := json.Marshal(&m)
+	_, err = json.Marshal(&m)
 	if err != nil {
 		log.Printf("Can't marshal action data")
 		return
@@ -149,7 +149,7 @@ func (ws *Websocket) SendEvent(clients []string, data []byte) {
 		cl = c
 	}
 
-	_, err = ws.ChatHandler.Create(&m)
+	chat, err := ws.ChatHandler.Create(&m)
 	if err != nil {
 		log.Println(err)
 	}
@@ -160,8 +160,13 @@ func (ws *Websocket) SendEvent(clients []string, data []byte) {
 		return // Exit the function without sending data
 	}
 
+	v, err := json.Marshal(&chat)
+	if err != nil {
+		log.Println(err)
+	}
+
 	// Send data to the client
-	cl.Send <- value
+	cl.Send <- v
 }
 
 // BroadcastEvent function send events in broadcast
