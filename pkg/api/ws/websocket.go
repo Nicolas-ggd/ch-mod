@@ -3,6 +3,8 @@ package ws
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Nicolas-ggd/ch-mod/internal/db/models/request"
+	"github.com/Nicolas-ggd/ch-mod/pkg/services"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -23,15 +25,18 @@ type Websocket struct {
 	Register chan *Client
 
 	UnRegister chan *Client
+
+	ChatHandler services.IChatService
 }
 
 // NewWebsocket returns new Websocket
-func NewWebsocket() *Websocket {
+func NewWebsocket(authService services.IChatService) *Websocket {
 	return &Websocket{
-		Clients:    make(map[string]*Client),
-		Broadcast:  make(chan []byte),
-		Register:   make(chan *Client),
-		UnRegister: make(chan *Client),
+		Clients:     make(map[string]*Client),
+		Broadcast:   make(chan []byte),
+		Register:    make(chan *Client),
+		UnRegister:  make(chan *Client),
+		ChatHandler: authService,
 	}
 }
 
@@ -116,4 +121,64 @@ func (ws *Websocket) ServeWs(c *gin.Context) {
 	// another goroutines.
 	go client.WritePump()
 	go client.ReadPump()
+}
+
+// SendEvent function send events to the client
+func (ws *Websocket) SendEvent(clients []string, data []byte) {
+	var cl *Client
+	var m request.WsChatRequest
+
+	err := json.Unmarshal(data, &m)
+	if err != nil {
+		log.Println(err)
+	}
+
+	value, err := json.Marshal(&m)
+	if err != nil {
+		log.Printf("Can't marshal action data")
+		return
+	}
+
+	for _, client := range clients {
+		c, ok := ws.Clients[client]
+		if !ok {
+			log.Printf("Client with ID %s not found", client)
+			return // Exit the function without sending data
+		}
+
+		cl = c
+	}
+
+	_, err = ws.ChatHandler.Create(&m)
+	if err != nil {
+		log.Println(err)
+	}
+
+	// Check if the Send channel is initialized
+	if cl.Send == nil {
+		log.Printf("Send channel not initialized for client with ID %v", cl)
+		return // Exit the function without sending data
+	}
+
+	// Send data to the client
+	cl.Send <- value
+}
+
+// BroadcastEvent function send events in broadcast
+func (ws *Websocket) BroadcastEvent(data []byte) {
+	var m request.WsChatRequest
+
+	err := json.Unmarshal(data, &m)
+	if err != nil {
+		log.Println(err)
+	}
+
+	value, err := json.Marshal(&m)
+	if err != nil {
+		log.Printf("Can't marshal broadcast data")
+		return
+	}
+
+	// Send data to the Broadcast channel
+	ws.Broadcast <- value
 }

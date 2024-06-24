@@ -30,3 +30,8 @@ var ConnectionUpgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 	CheckOrigin:     func(r *http.Request) bool { return true },
 }
+
+const (
+	MessageAction = "send-message"
+	JoinAction    = "join-action"
+)

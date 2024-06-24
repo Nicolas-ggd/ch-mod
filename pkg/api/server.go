@@ -18,7 +18,7 @@ func ServeAPI(db *gorm.DB) *gin.Engine {
 
 	r := gin.Default()
 
-	wss := ws.NewWebsocket()
+	wss := ws.NewWebsocket(service.ChatService)
 
 	go wss.Run()
 

@@ -16,7 +16,17 @@ func NewChatRepository(db *gorm.DB) ChatRepository {
 }
 
 func (r *ChatRepository) Create(model *models.Chat) (*models.Chat, error) {
-	err := r.DB.Create(model).Error
+	err := r.DB.Where("from = ? AND to = ?", model.From, model.To).First(model).Error
+	if err == nil {
+		err = r.DB.Create(model).Error
+		if err != nil {
+			return nil, err
+		}
+
+		return nil, err
+	}
+
+	err = r.DB.Create(model.Message).Error
 	if err != nil {
 		return nil, err
 	}

@@ -10,6 +10,7 @@ type Chat struct {
 	From      uint      `json:"from" gorm:"index"`
 	To        uint      `json:"to" gorm:"index"`
 	Name      string    `json:"name"`
+	IsPrivate bool      `json:"is_private"`
 	Message   []Message `json:"message" gorm:"foreignKey:ChatID;onDelete:CASCADE"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"-"`
