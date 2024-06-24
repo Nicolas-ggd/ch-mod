@@ -16,17 +16,25 @@ func NewChatRepository(db *gorm.DB) ChatRepository {
 }
 
 func (r *ChatRepository) Create(model *models.Chat) (*models.Chat, error) {
-	err := r.DB.Where("from = ? AND to = ?", model.From, model.To).First(model).Error
+	var existing models.Chat
+
+	err := r.DB.
+		Preload("Users").
+		Preload("Messages").
+		Where("name = ? AND is_private = ?", model.Name, model.IsPrivate).
+		First(&existing).Error
 	if err == nil {
-		err = r.DB.Create(model).Error
-		if err != nil {
-			return nil, err
+		for _, message := range model.Messages {
+			err = r.DB.Create(&message).Error
+			if err != nil {
+				return nil, err
+			}
 		}
 
-		return nil, err
+		return &existing, nil
 	}
 
-	err = r.DB.Create(model.Message).Error
+	err = r.DB.Create(&model).Error
 	if err != nil {
 		return nil, err
 	}

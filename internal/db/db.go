@@ -29,10 +29,11 @@ func InitDB() (*gorm.DB, error) {
 	}
 
 	err = database.AutoMigrate(
-		&models.User{},
+		&models.Users{},
 		&models.UserToken{},
 		&models.Chat{},
 		&models.Message{},
+		&models.ChatUsers{},
 	)
 	if err != nil {
 		panic(err)

@@ -1,40 +1,59 @@
 package request
 
-import "github.com/Nicolas-ggd/ch-mod/internal/db/models"
+import (
+	"fmt"
+	"github.com/Nicolas-ggd/ch-mod/internal/db/models"
+	"strconv"
+)
 
 type ChatRequest struct {
-	To        uint             `json:"to"`
-	From      uint             `json:"from"`
-	Name      string           `json:"name"`
-	Message   []MessageRequest `json:"message"`
-	IsPrivate bool             `json:"is_private"`
+	Name      string             `json:"name"`
+	Message   []MessageRequest   `json:"message"`
+	Users     []ChatUsersRequest `json:"users"`
+	IsPrivate bool               `json:"is_private"`
 }
 
 type WsChatRequest struct {
-	To        uint             `json:"to"`
-	From      uint             `json:"from"`
-	Name      string           `json:"name"`
-	Message   []MessageRequest `json:"message"`
-	Clients   []string         `json:"clients"`
-	IsPrivate bool             `json:"is_private"`
+	Name      string             `json:"name"`
+	Message   []MessageRequest   `json:"message"`
+	Users     []ChatUsersRequest `json:"users"`
+	Clients   []string           `json:"clients"`
+	IsPrivate bool               `json:"is_private"`
 }
 
 type MessageRequest struct {
-	From    uint   `json:"from"`
+	FromID  uint   `json:"from_id"`
 	Content string `json:"content"`
 	ChatID  uint   `json:"chat_id"`
 }
 
+type ChatUsersRequest struct {
+	UsersID []uint `json:"users_id"`
+}
+
 func (cr *WsChatRequest) ToModel() *models.Chat {
 	c := &models.Chat{
-		To:        cr.To,
-		From:      cr.From,
 		Name:      cr.Name,
 		IsPrivate: cr.IsPrivate,
 	}
 
-	for _, m := range cr.Message {
-		c.Message = append(c.Message, models.Message{Content: m.Content, ChatID: m.ChatID, From: m.From})
+	fmt.Printf("%+v\n", cr)
+
+	for _, userId := range cr.Clients {
+		id, err := strconv.ParseUint(userId, 10, 64)
+		if err != nil {
+			return nil
+		}
+
+		c.Users = append(c.Users, models.ChatUsers{UserId: uint(id)})
+	}
+
+	for _, messageRequest := range cr.Message {
+		c.Messages = append(c.Messages, models.Message{
+			Content: messageRequest.Content,
+			FromID:  messageRequest.FromID,
+			ChatID:  messageRequest.ChatID,
+		})
 	}
 
 	return c

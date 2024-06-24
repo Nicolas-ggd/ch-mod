@@ -17,7 +17,7 @@ import (
 var secret = os.Getenv("PRIVATE_SECRET")
 
 type IAuthService interface {
-	Register(model *request.UserRegisterRequest) (*models.User, error)
+	Register(model *request.UserRegisterRequest) (*models.Users, error)
 	Login(model *request.LoginRequest) (*string, error)
 	Logout(userId uint) error
 	CheckJWT(token string) (*models.TokenClaim, error)
@@ -34,7 +34,7 @@ func NewAuthService(authRepo repository.UserRepository, tokenRepository reposito
 	return &AuthService{userRepository: authRepo, tokenRepository: tokenRepository}
 }
 
-func (as *AuthService) Register(model *request.UserRegisterRequest) (*models.User, error) {
+func (as *AuthService) Register(model *request.UserRegisterRequest) (*models.Users, error) {
 	err := common.ComparePasswords(model.Password, model.ConfirmPassword)
 	if err != nil {
 		return nil, err

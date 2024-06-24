@@ -18,7 +18,7 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 	}
 }
 
-func (r *UserRepository) Register(user *models.User) (*models.User, error) {
+func (r *UserRepository) Register(user *models.Users) (*models.Users, error) {
 	err := r.DB.Create(&user).Error
 	if err != nil {
 		return nil, err
@@ -27,8 +27,8 @@ func (r *UserRepository) Register(user *models.User) (*models.User, error) {
 	return user, nil
 }
 
-func (r *UserRepository) GetByEmail(email string) (*models.User, error) {
-	var user models.User
+func (r *UserRepository) GetByEmail(email string) (*models.Users, error) {
+	var user models.Users
 
 	err := r.DB.Where("email = ?", email).
 		Preload("UserToken").
@@ -71,7 +71,7 @@ func (r *UserRepository) ChangePassword(newPassword *request.SetPasswordRequest,
 		return err
 	}
 
-	result := r.DB.Model(&models.User{}).Where("id = ?", userId).Update("password", hash)
+	result := r.DB.Model(&models.Users{}).Where("id = ?", userId).Update("password", hash)
 	if result.Error != nil {
 		return err
 	}
