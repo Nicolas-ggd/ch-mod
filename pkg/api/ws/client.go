@@ -2,7 +2,9 @@ package ws
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"github.com/Nicolas-ggd/ch-mod/internal/db/models/request"
 	"github.com/gorilla/websocket"
 	"log"
 	"time"
@@ -53,8 +55,22 @@ func (c *Client) ReadPump() {
 			break
 		}
 
+		var recMsg request.WsChatRequest
 		message = bytes.TrimSpace(bytes.Replace(message, newLine, space, -1))
 		fmt.Printf("Received message: %s\n", message)
+
+		err = json.Unmarshal(message, &recMsg)
+		if err != nil {
+			log.Printf("error unmarshaling message: %v\n", err)
+			continue
+		}
+
+		if recMsg.IsPrivate {
+			c.Ws.SendEvent(recMsg.Clients, message)
+		} else {
+			c.Ws.BroadcastEvent(message)
+		}
+
 	}
 }
 
