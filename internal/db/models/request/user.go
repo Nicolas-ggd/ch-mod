@@ -29,8 +29,8 @@ type ResetPasswordRequest struct {
 	Email string `json:"email" binding:"required"`
 }
 
-func (ur *UserRegisterRequest) ToModel() *models.User {
-	return &models.User{
+func (ur *UserRegisterRequest) ToModel() *models.Users {
+	return &models.Users{
 		FullName:    ur.FullName,
 		Email:       ur.Email,
 		BirthDate:   parseTime(ur.BirthDate),

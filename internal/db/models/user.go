@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type User struct {
+type Users struct {
 	ID          uint           `json:"id" gorm:"primary_key"`
 	FullName    string         `json:"full_name"`
 	Email       string         `json:"email" gorm:"unique"`
@@ -22,7 +22,7 @@ type User struct {
 }
 
 // BeforeCreate is GORM built-in hook, it's used to generate user unique password before record is created in database
-func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
+func (u *Users) BeforeCreate(tx *gorm.DB) (err error) {
 	hash, err := common.HashPassword(u.Password)
 	if err != nil {
 		return fmt.Errorf("failed to generate password hash: %v", err)

@@ -6,23 +6,30 @@ import (
 )
 
 type Chat struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	From      uint      `json:"from" gorm:"index"`
-	To        uint      `json:"to" gorm:"index"`
-	Name      string    `json:"name"`
-	IsPrivate bool      `json:"is_private"`
-	Message   []Message `json:"message" gorm:"foreignKey:ChatID;onDelete:CASCADE"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"-"`
-	DeletedAt time.Time `json:"-" gorm:"index"`
+	ID        uint        `json:"id" gorm:"primaryKey"`
+	Name      string      `json:"name"`
+	Messages  []Message   `json:"message" gorm:"foreignKey:ChatID;onDelete:CASCADE"`
+	Users     []ChatUsers `json:"users" gorm:"foreignKey:ChatID;onDelete:CASCADE"`
+	IsPrivate bool        `json:"is_private"`
+	CreatedAt time.Time   `json:"created_at"`
+	UpdatedAt time.Time   `json:"-"`
+	DeletedAt time.Time   `json:"-" gorm:"index"`
 }
 
 type Message struct {
 	ID        uint           `json:"id" gorm:"primaryKey"`
 	ChatID    uint           `json:"chat_id" gorm:"index"`
-	From      uint           `json:"from"`
+	FromID    uint           `json:"from_id" gorm:"index"`
+	From      Users          `json:"-" gorm:"foreignKey:FromID;reference:ID;onDelete:CASCADE"`
 	Content   string         `json:"content"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
+}
+
+type ChatUsers struct {
+	UserId uint  `json:"user_id" gorm:"uniqueIndex:idx_unique_chat_users;primaryKey;autoIncrement:false;"`
+	User   Users `json:"user" gorm:"foreignKey:UserId;reference:ID;onDelete:CASCADE"`
+	ChatID uint  `json:"chat_id" gorm:"uniqueIndex:idx_unique_chat_users;primaryKey;autoIncrement:false;"`
+	Chat   Chat  `json:"chat" gorm:"foreignKey:ChatID;reference:ID;onDelete:CASCADE"`
 }
