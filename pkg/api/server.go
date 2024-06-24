@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/Nicolas-ggd/ch-mod/pkg/api/handler"
+	"github.com/Nicolas-ggd/ch-mod/pkg/api/middleware"
 	"github.com/Nicolas-ggd/ch-mod/pkg/api/routes"
 	"github.com/Nicolas-ggd/ch-mod/pkg/api/ws"
 	"github.com/Nicolas-ggd/ch-mod/pkg/repository"
@@ -15,8 +16,11 @@ func ServeAPI(db *gorm.DB) *gin.Engine {
 	service := services.NewService(repositories)
 
 	authHandler := handler.NewAuthHandler(service.AuthService)
+	userHandler := handler.NewUserHandler(service.UserService, service.AuthService)
 
 	r := gin.Default()
+
+	r.Use(middleware.CORSOptions())
 
 	wss := ws.NewWebsocket(service.ChatService)
 
@@ -26,6 +30,7 @@ func ServeAPI(db *gorm.DB) *gin.Engine {
 	v1 := r.Group("v1")
 	{
 		routes.AuthRoutes(v1.Group("auth"), authHandler)
+		routes.UserRoutes(v1.Group("user"), userHandler)
 	}
 
 	return r
