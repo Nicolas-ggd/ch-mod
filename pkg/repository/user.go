@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"fmt"
 	"github.com/Nicolas-ggd/ch-mod/internal/db/models"
 	"github.com/Nicolas-ggd/ch-mod/internal/db/models/request"
@@ -77,4 +78,34 @@ func (r *UserRepository) ChangePassword(newPassword *request.SetPasswordRequest,
 	}
 
 	return nil
+}
+
+func (r *UserRepository) FindByEmail(email string) (*[]models.Users, error) {
+	var user []models.Users
+
+	err := r.DB.Debug().Where("email LIKE ?", email).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("user with email: %s doesn't exist", email)
+		}
+
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (r *UserRepository) FindByID(id uint) (*models.Users, error) {
+	var user *models.Users
+
+	err := r.DB.First(&user, id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("user with ID: %d doesn't exist", id)
+		}
+
+		return nil, err
+	}
+
+	return user, nil
 }
