@@ -8,6 +8,6 @@ import (
 
 func UserRoutes(e *gin.RouterGroup, userHandler *handler.UserHandler) {
 	e.Use(middleware.AuthMiddleware(userHandler.AuthService))
-	e.GET("/by-email/:email", userHandler.FindByEmail)
+	e.GET("/search", userHandler.FindByEmail)
 	e.GET("/me", userHandler.Me)
 }

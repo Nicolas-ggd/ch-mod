@@ -125,48 +125,43 @@ func (ws *Websocket) ServeWs(c *gin.Context) {
 
 // SendEvent function send events to the client
 func (ws *Websocket) SendEvent(clients []string, data []byte) {
-	var cl *Client
 	var m request.WsChatRequest
 
 	err := json.Unmarshal(data, &m)
 	if err != nil {
 		log.Println(err)
+		return
 	}
 
-	_, err = json.Marshal(&m)
+	chat, err := ws.ChatHandler.Create(&m)
 	if err != nil {
-		log.Printf("Can't marshal action data")
+		log.Println(err)
+		return
+	}
+
+	v, err := json.Marshal(&chat)
+	if err != nil {
+		log.Println(err)
 		return
 	}
 
 	for _, client := range clients {
+		fmt.Println(client, "clients")
 		c, ok := ws.Clients[client]
 		if !ok {
 			log.Printf("Client with ID %s not found", client)
 			continue // Continue process
 		}
 
-		cl = c
-	}
+		// Check if the Send channel is initialized
+		if c.Send == nil {
+			log.Printf("Send channel not initialized for client with ID %v", client)
+			continue // Continue process
+		}
 
-	chat, err := ws.ChatHandler.Create(&m)
-	if err != nil {
-		log.Println(err)
+		// Send data to the client
+		c.Send <- v
 	}
-
-	// Check if the Send channel is initialized
-	if cl.Send == nil {
-		log.Printf("Send channel not initialized for client with ID %v", cl)
-		return // Exit the function without sending data
-	}
-
-	v, err := json.Marshal(&chat)
-	if err != nil {
-		log.Println(err)
-	}
-
-	// Send data to the client
-	cl.Send <- v
 }
 
 // BroadcastEvent function send events in broadcast

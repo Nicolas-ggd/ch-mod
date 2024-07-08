@@ -83,7 +83,7 @@ func (r *UserRepository) ChangePassword(newPassword *request.SetPasswordRequest,
 func (r *UserRepository) FindByEmail(email string) (*[]models.Users, error) {
 	var user []models.Users
 
-	err := r.DB.Debug().Where("email LIKE ?", email).First(&user).Error
+	err := r.DB.Debug().Where("email LIKE ?", "%"+email+"%").Find(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("user with email: %s doesn't exist", email)

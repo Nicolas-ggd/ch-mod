@@ -17,6 +17,7 @@ func ServeAPI(db *gorm.DB) *gin.Engine {
 
 	authHandler := handler.NewAuthHandler(service.AuthService)
 	userHandler := handler.NewUserHandler(service.UserService, service.AuthService)
+	chatHandler := handler.NewMessageHandler(service.ChatService, service.AuthService)
 
 	r := gin.Default()
 
@@ -31,6 +32,7 @@ func ServeAPI(db *gorm.DB) *gin.Engine {
 	{
 		routes.AuthRoutes(v1.Group("auth"), authHandler)
 		routes.UserRoutes(v1.Group("user"), userHandler)
+		routes.ChatRoutes(v1.Group("chat"), chatHandler)
 	}
 
 	return r

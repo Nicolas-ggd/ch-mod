@@ -1,7 +1,6 @@
 package request
 
 import (
-	"fmt"
 	"github.com/Nicolas-ggd/ch-mod/internal/db/models"
 	"strconv"
 )
@@ -14,11 +13,10 @@ type ChatRequest struct {
 }
 
 type WsChatRequest struct {
-	Name      string             `json:"name"`
-	Message   []MessageRequest   `json:"message"`
-	Users     []ChatUsersRequest `json:"users"`
-	Clients   []string           `json:"clients"`
-	IsPrivate bool               `json:"is_private"`
+	Name      string           `json:"name"`
+	Message   []MessageRequest `json:"message"`
+	Clients   []string         `json:"clients"`
+	IsPrivate bool             `json:"is_private"`
 }
 
 type MessageRequest struct {
@@ -37,8 +35,6 @@ func (cr *WsChatRequest) ToModel() *models.Chat {
 		IsPrivate: cr.IsPrivate,
 	}
 
-	fmt.Printf("%+v\n", cr)
-
 	for _, userId := range cr.Clients {
 		id, err := strconv.ParseUint(userId, 10, 64)
 		if err != nil {
@@ -52,7 +48,6 @@ func (cr *WsChatRequest) ToModel() *models.Chat {
 		c.Messages = append(c.Messages, models.Message{
 			Content: messageRequest.Content,
 			FromID:  messageRequest.FromID,
-			ChatID:  messageRequest.ChatID,
 		})
 	}
 

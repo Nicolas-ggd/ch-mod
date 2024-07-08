@@ -18,7 +18,7 @@ var secret = os.Getenv("PRIVATE_SECRET")
 
 type IAuthService interface {
 	Register(model *request.UserRegisterRequest) (*models.Users, error)
-	Login(model *request.LoginRequest) (*string, error)
+	Login(model *request.LoginRequest) (*string, *uint, error)
 	Logout(userId uint) error
 	CheckJWT(token string) (*models.TokenClaim, error)
 	SetPassword(credentials request.SetPasswordRequest, hash string) error
@@ -48,20 +48,20 @@ func (as *AuthService) Register(model *request.UserRegisterRequest) (*models.Use
 	return user, nil
 }
 
-func (as *AuthService) Login(model *request.LoginRequest) (*string, error) {
+func (as *AuthService) Login(model *request.LoginRequest) (*string, *uint, error) {
 	user, err := as.userRepository.GetByEmail(model.Email)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	err = common.CompareHashAndPasswordBcrypt(user.Password, model.Password)
 	if err != nil {
-		return nil, fmt.Errorf("user email or password is incorrect")
+		return nil, nil, fmt.Errorf("user email or password is incorrect")
 	}
 
 	token, err := as.tokenRepository.CreateJWT(user.ID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	userToken, err := as.userRepository.GetAuthToken(user.ID)
@@ -76,10 +76,10 @@ func (as *AuthService) Login(model *request.LoginRequest) (*string, error) {
 
 	err = as.tokenRepository.CreateToken(userToken)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return &token, nil
+	return &token, &user.ID, nil
 }
 
 func (as *AuthService) Logout(userId uint) error {

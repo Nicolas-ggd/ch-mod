@@ -46,7 +46,7 @@ func (ah *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := ah.AuthService.Login(&login)
+	token, userId, err := ah.AuthService.Login(&login)
 	if err != nil {
 		if strings.Contains(err.Error(), "user email or password is incorrect") {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
@@ -56,7 +56,7 @@ func (ah *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	c.JSON(http.StatusOK, gin.H{"token": token, "user_id": userId})
 }
 
 func (ah *AuthHandler) Logout(c *gin.Context) {

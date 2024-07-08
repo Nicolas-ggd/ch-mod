@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/Nicolas-ggd/ch-mod/pkg/services"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -22,9 +23,11 @@ func NewUserHandler(userService services.IUserService, authService services.IAut
 func (h *UserHandler) FindByEmail(c *gin.Context) {
 	email := c.Query("email")
 	if email == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "email is required"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "query parameter is required"})
 		return
 	}
+
+	fmt.Println(email, "dz")
 
 	user, err := h.UserService.FindByEmail(email)
 	if err != nil {

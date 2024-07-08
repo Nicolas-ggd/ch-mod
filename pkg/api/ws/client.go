@@ -3,7 +3,6 @@ package ws
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/Nicolas-ggd/ch-mod/internal/db/models/request"
 	"github.com/gorilla/websocket"
 	"log"
@@ -57,7 +56,6 @@ func (c *Client) ReadPump() {
 
 		var recMsg request.WsChatRequest
 		message = bytes.TrimSpace(bytes.Replace(message, newLine, space, -1))
-		fmt.Printf("Received message: %s\n", message)
 
 		err = json.Unmarshal(message, &recMsg)
 		if err != nil {
